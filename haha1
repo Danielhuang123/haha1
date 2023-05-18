@@ -1,0 +1,86 @@
+while (1) {
+      int instr = text[(pc - ADDR_TEXT) / 4];
+      int opcode = instr >> 26;
+      int rs = (instr >> 21) & 0x1f;
+      int rt = (instr >> 16) & 0x1f;
+      int rd = (instr >> 11) & 0x1f;
+      int shamt = (instr >> 6) & 0x1f;
+      int funct = instr & 0x3f;
+      int imm = instr & 0xffff;
+      int target = instr & 0x3ffffff;
+      
+      // Execute the instruction based on the opcode
+      switch (opcode) {
+      case 0x00:  //It's R-format introduce
+          switch (funct) { //We consider functionCode for R-format
+          case 0x00: // SLL
+              //registers[rd] = registers[rt] << shamt;
+              opcode_sll(0, instr, opcode, rd, rt, shamt);
+              pc += 4;
+              break;
+          case 0x02: // SRL
+              //registers[rd] = registers[rt] >> shamt;
+              opcode_srl(0, instr, opcode, rd, rt, shamt);
+              pc += 4;
+              break;
+          case 0x20: // ADD
+              //registers[rd] = registers[rs] + registers[rt];
+              opcode_add(0, instr, opcode, rd, rt, rs);
+              pc += 4;
+              break;
+          default:
+              printf("Invalid instruction: %08x\n", instr);
+              exit(1);
+          }
+          break;
+      case 0x05: // BNE
+          /*if (registers[rs] != registers[rt]) {
+              pc += (imm << 2) + 4;
+          }
+          else {
+              pc += 4;
+          }*/
+          opcode_bne(2, instr, opcode, rs, rt, imm);
+          pc += 4;
+          break;
+      case 0x08: // ADDI
+          //registers[rt] = registers[rs] + imm;
+          opcode_addi(0, instr, opcode, rt, rs, imm);
+          pc += 4;
+          break;
+      case 0x0c: // ANDI
+          //registers[rt] = registers[rs] & imm;
+          opcode_andi(0, instr, opcode, rt, rs, imm);
+          pc += 4;
+          break;
+      case 0x0f: // LUI
+          //registers[rt] = imm << 16;
+          opcode_lui(0, instr, opcode, rt,imm , NULL);
+          pc += 4;
+          break;
+      case 0x23: // LW
+          //registers[rt] = data[(registers[rs] + imm - ADDR_DATA) / 4];
+          opcode_lw(0, instr, opcode, rt, rs, imm);
+          pc += 4;
+          break;
+      case 0x2b: // SW
+          //data[(registers[rs] + imm - ADDR_DATA) / 4] = registers[rt];
+          opcode_sw(0, instr, opcode, rt, rs, imm);
+          pc += 4;
+          break;
+      case 0x25: // LHU
+          //registers[rt] = (unsigned short)data[(registers[rs] + imm - ADDR_DATA) / 4];
+          opcode_lhu(0, instr, opcode, rt, rs, imm);
+          pc += 4;
+          break;
+      case 0x29: // SH
+          //data[(registers[rs] + imm - ADDR_DATA) / 4] = (unsigned short)registers[rt];
+          opcode_sh(0, instr, opcode, rt, rs, imm);
+          pc += 4;
+          break;
+      default:
+          printf("Invalid instruction: %08x\n", instr);
+          exit(1);
+      }
+  }
+
